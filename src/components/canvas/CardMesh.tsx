@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useCardStore } from '../../store/useCardStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTextureLoader } from '../../hooks/useTextureLoader';
+import { Text } from '@react-three/drei';
 import OverlayLayer from './OverlayMesh';
 
 const CARD_WIDTH = 3.37;
@@ -148,28 +149,6 @@ function CardFace({ url, side, cornerRadius }: { url: string | null; side: 'fron
   );
 }
 
-function ChipMesh() {
-  const chipTexture = useTextureLoader('/chip-texture.png');
-  const chipW = 0.45;
-  const chipH = 0.35;
-  const z = CARD_DEPTH / 2 + 0.002;
-
-  if (!chipTexture) return null;
-
-  return (
-    <mesh position={[-0.85, 0.15, z]}>
-      <planeGeometry args={[chipW, chipH]} />
-      <meshStandardMaterial
-        map={chipTexture}
-        metalness={0.85}
-        roughness={0.2}
-        transparent
-        alphaTest={0.1}
-      />
-    </mesh>
-  );
-}
-
 export default function CardMesh() {
   const { metalness, roughness, clearcoat, iridescence, cornerRadius } = useCardStore(useShallow((s) => ({
     metalness: s.metalness,
@@ -198,8 +177,20 @@ export default function CardMesh() {
         />
       </mesh>
       <CardFace url={frontImage} side="front" cornerRadius={cornerRadius} />
+      {!frontImage && (
+        <Text
+          position={[0, 0, CARD_DEPTH / 2 + 0.002]}
+          fontSize={0.12}
+          color="#888888"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={CARD_WIDTH * 0.8}
+          textAlign="center"
+        >
+          Upload a front image for your card
+        </Text>
+      )}
       <CardFace url={backImage} side="back" cornerRadius={cornerRadius} />
-      <ChipMesh />
       <ShimmerOverlay cornerRadius={cornerRadius} />
       <OverlayLayer />
     </group>
