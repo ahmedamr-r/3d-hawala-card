@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type * as THREE from 'three';
 import { useCardStore } from '../store/useCardStore';
 
 export function useExport() {
@@ -8,10 +9,6 @@ export function useExport() {
   const exportPNG = useCallback((gl: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) => {
     const width = gl.domElement.width;
     const height = gl.domElement.height;
-
-    // Create offscreen renderer at desired scale
-    const offscreen = new (window as any).OffscreenCanvas(width * exportScale, height * exportScale);
-    const ctx = offscreen.getContext('2d');
 
     // Use the existing renderer's canvas
     const prevAlpha = gl.getClearAlpha();

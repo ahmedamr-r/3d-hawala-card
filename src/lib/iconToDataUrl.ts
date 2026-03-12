@@ -3,13 +3,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as icons from 'lucide-react';
 import type { PatternLayout } from '../types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const iconMap = icons as Record<string, any>;
+
 export function iconToDataUrl(
   iconName: string,
   color = '#FFFFFF',
   size = 64,
 ): string | null {
-  const Icon = (icons as Record<string, icons.LucideIcon>)[iconName];
-  if (!Icon) return null;
+  const Icon = iconMap[iconName];
+  if (!Icon || typeof Icon !== 'function') return null;
 
   const svg = renderToStaticMarkup(
     createElement(Icon, { color, size, strokeWidth: 2 }),
@@ -24,7 +27,7 @@ export function iconToDataUrl(
 export function patternToDataUrl(
   iconNames: string[],
   iconColor: string,
-  bgColor: string,
+  _bgColor: string,
   layout: PatternLayout,
   spacing: number,
   iconRotation: number,
@@ -38,8 +41,8 @@ export function patternToDataUrl(
 
   // Render each icon once as a <g> def, stripping outer <svg> wrapper
   const defs = iconNames.map((name, i) => {
-    const Icon = (icons as Record<string, icons.LucideIcon>)[name];
-    if (!Icon) return '';
+    const Icon = iconMap[name];
+    if (!Icon || typeof Icon !== 'function') return '';
     const markup = renderToStaticMarkup(
       createElement(Icon, { color: iconColor, size: iconSize, strokeWidth: 2 }),
     );
@@ -79,13 +82,11 @@ export function patternToDataUrl(
       const rowH = Math.round(cellSize * 0.866);
       patternW = cellSize * count;
       patternH = rowH * 2;
-      // Row 1
       let uses = iconNames.map((_, i) => {
         const cx = i * cellSize + cellSize / 2 - half;
         const cy = rowH / 2 - half;
         return `<use xlink:href="#ic${i}" x="${cx}" y="${cy}" />`;
       }).join('\n');
-      // Row 2 offset
       uses += '\n' + iconNames.map((_, i) => {
         const cx = i * cellSize + cellSize - half;
         const cy = rowH + rowH / 2 - half;
@@ -117,7 +118,7 @@ export function patternToDataUrl(
   }
 
   const svgW = 1024;
-  const svgH = 645; // matches card aspect ratio 3.37:2.125
+  const svgH = 645;
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${svgW}" height="${svgH}">
 <defs>
@@ -134,7 +135,7 @@ ${patternContent}
 
 export function getIconNames(): string[] {
   return Object.keys(icons).filter(
-    (key) => key !== 'default' && key !== 'createLucideIcon' && key !== 'icons' && typeof (icons as Record<string, unknown>)[key] === 'function',
+    (key) => key !== 'default' && key !== 'createLucideIcon' && key !== 'icons' && typeof iconMap[key] === 'function',
   );
 }
 
